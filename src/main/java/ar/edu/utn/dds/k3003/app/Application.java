@@ -1,5 +1,6 @@
 package ar.edu.utn.dds.k3003.app;
 
+import ar.edu.utn.dds.k3003.Fachada;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.*;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaIncentivos;
@@ -16,10 +17,17 @@ public class Application{
         SpringApplication.run(Application.class, args);
     }
 
+    @Bean
+    public Fachada fachada(FachadaDonadoresYEntidades fachadaDonadoresYEntidades) {
+        Fachada fachada = new Fachada();
+        fachada.setFachadaDonadoresYEntidades(fachadaDonadoresYEntidades);
+        return fachada;
+    }
 
     @Bean
     public FachadaDonadoresYEntidades fachadaDonadoresYEntidades() {
         return new FachadaDonadoresYEntidades() {
+
             @Override
             public DonadorDTO agregarDonador(DonadorDTO donadorDTO) {
                 return null;

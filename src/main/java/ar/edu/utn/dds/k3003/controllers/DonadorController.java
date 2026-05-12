@@ -2,30 +2,55 @@ package ar.edu.utn.dds.k3003.controllers;
 
 import ar.edu.utn.dds.k3003.Fachada;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.DonadorDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/donadores")
 public class DonadorController {
 
-  /*private Fachada fachada;
+  private Fachada fachada;
 
   public DonadorController(Fachada fachada) {
     this.fachada = fachada;
   }
 
-  // Opcion 1 utilizando @RequestMapping
-  @RequestMapping(method = RequestMethod.POST)
-  public ResponseEntity<DonadorDTO> postDonador(@RequestBody DonadorDTO donadorDTO) {
-    DonadorDTO donadorAgregado = fachada.agregarDonador(donadorDTO);
-    return ResponseEntity.ok(donadorAgregado);
+    @GetMapping("/{donadorID}/insignias")
+    public List<InsigniaDTO> getInsigniasDeDonadorByID(@PathVariable String donadorID){
+        return fachada.getInsigniasDeDonador(donadorID);
+    }
+
+    @PostMapping("/{donadorID}/insignias")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void postInsigniaADonador(@PathVariable String donadorID,
+                                     @RequestBody Map<String, String> body){
+        InsigniaDTO insignia = fachada.obtenerInsigniaPorID(body.get("insigniaID"));
+        fachada.asignarInsigniaADonador(donadorID,insignia);
   }
 
-  // Opcion 2 utilizando @GetMapping
-  @GetMapping
-  public ResponseEntity<DonadorDTO> getDonadorByID(@RequestParam String donadorID) {
-    return ResponseEntity.status(HttpStatus.OK).body(this.fachada.buscarDonadorPorID(donadorID));
-  }*/
+    @GetMapping("/{donadorID}/mision")
+    public MisionDTO getMisionDeDonadorByID(@PathVariable String donadorID){
+        return fachada.getMisionEnCursoDeDonador(donadorID);
+    }
+
+    @PostMapping("/{donadorID}/mision")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void postMisionADonador(@PathVariable String donadorID,
+                                   @RequestBody Map<String, String> body){
+        MisionDTO mision = fachada.obtenerMisionPorID(body.get("misionID"));
+        fachada.asignarMisionADonador(donadorID,mision);
+    }
+
+  @PostMapping("/{donadorID}/procesamiento")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void procesarmientoDeDonadorPorID(@PathVariable String donadorID){
+        fachada.procesarDonador(donadorID);
+    }
+
 }

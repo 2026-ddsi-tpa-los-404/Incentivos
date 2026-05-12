@@ -35,18 +35,7 @@ public class InsigniaController {
         return fachada.agregarInsignia(insigniaDTO);
     }
 
-    @GetMapping("/{donadorID}")
-    public List<InsigniaDTO> getInsigniasDeDonadorByID(@RequestBody String donadorID){
-        return fachada.getInsigniasDeDonador(donadorID);
-    }
 
-    @PostMapping("/{donadorID}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void postInsigniaADonador(@PathVariable String donadorID,
-                                            @RequestBody Map<String, String> body){
-        InsigniaDTO insignia = fachada.obtenerInsigniaPorID(body.get("insigniaID"));
-        fachada.asignarInsigniaADonador(donadorID,insignia);
-    }
 }
 
 

@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@Component
+
 public class Fachada implements FachadaIncentivos {
   private InsigniasMemoryRepo insigniasMemoryRepo;
   private MisionesMemoryRepo misionesMemoryRepo;

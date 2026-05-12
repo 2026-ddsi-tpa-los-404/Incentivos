@@ -7,9 +7,17 @@ import java.util.NoSuchElementException;
 
 public interface FachadaIncentivos {
 
-  InsigniaDTO agregarInsignia(InsigniaDTO insignia);
+    List<InsigniaDTO> obtenerInsignias();
 
-  MisionDTO agregarMision(MisionDTO mision);
+    InsigniaDTO obtenerInsigniaPorID(String insigniaID);
+
+    InsigniaDTO agregarInsignia(InsigniaDTO insignia);
+
+    List<MisionDTO> obtenerMisiones();
+
+    MisionDTO obtenerMisionPorID(String misionID);
+
+    MisionDTO agregarMision(MisionDTO mision);
 
   List<InsigniaDTO> getInsigniasDeDonador(String donadorID) throws NoSuchElementException;
 

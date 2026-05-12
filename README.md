@@ -2,12 +2,12 @@
 # 🧪 2026 - Trabajo Práctico Anual
 
 ## 👤 Datos del Alumno
-- **Nombre:**
-- **Apellido:**
+- **Nombre: CARLOS**
+- **Apellido: HERRERA**
 
 ---
 
-🧩 Componente Desarrollado
+🧩 Componente INCENTIVOS
 -
 
 ---

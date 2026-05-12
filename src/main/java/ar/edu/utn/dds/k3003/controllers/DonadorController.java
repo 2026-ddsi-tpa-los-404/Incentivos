@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/donadores")
 public class DonadorController {
 
-  private Fachada fachada;
+  /*private Fachada fachada;
 
   public DonadorController(Fachada fachada) {
     this.fachada = fachada;
@@ -27,5 +27,5 @@ public class DonadorController {
   @GetMapping
   public ResponseEntity<DonadorDTO> getDonadorByID(@RequestParam String donadorID) {
     return ResponseEntity.status(HttpStatus.OK).body(this.fachada.buscarDonadorPorID(donadorID));
-  }
+  }*/
 }

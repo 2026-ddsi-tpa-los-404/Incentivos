@@ -1,150 +1,187 @@
 package ar.edu.utn.dds.k3003;
 
-import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.*;
+import ar.edu.utn.dds.k3003.catedra.dtos.donaciones.DonacionDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
+import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
+import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonaciones;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaIncentivos;
-import ar.edu.utn.dds.k3003.exceptions.DonadorNoEncontradoException;
-import ar.edu.utn.dds.k3003.exceptions.DonadorYaExistenteException;
-import ar.edu.utn.dds.k3003.repositories.DonadoresRepository;
-import ar.edu.utn.dds.k3003.repositories.DonadoresYEntidadesDataMapper;
-import ar.edu.utn.dds.k3003.repositories.InMemoryDonadoresRepo;
+import ar.edu.utn.dds.k3003.model.Insignia;
+import ar.edu.utn.dds.k3003.model.Mision;
+import ar.edu.utn.dds.k3003.repositories.*;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
-import lombok.val;
-import org.springframework.stereotype.Service;
 
-@Service
-public class Fachada implements FachadaDonadoresYEntidades {
+@Component
+public class Fachada implements FachadaIncentivos {
+  private InsigniasMemoryRepo insigniasMemoryRepo;
+  private MisionesMemoryRepo misionesMemoryRepo;
+  private DonadorEIncentivosMemoryRepo donadorEIncentivosMemoryRepo;
+  private FachadaDonaciones fachadaDonaciones;
+  private FachadaDonadoresYEntidades fachadaDonadoresYEntidades;
 
-  private DonadoresRepository donadoresRepository;
-  private DonadoresYEntidadesDataMapper donadoresYEntidadesDataMapper =
-      new DonadoresYEntidadesDataMapper();
+  private MisionMapper misionMapper = new MisionMapper();
+  private InsigniaMapper insigniaMapper = new InsigniaMapper();
 
   public Fachada() {
-    /*
-    Para que se ejecuten correctamente los tests, se necesita tener un constructor vacio
-    Es decir, que no reciba parametros.
-    Si necesitan un constructor con parametros
-    Java permite tener varios constructores conviviendo sin conflictos.
-    */
-
-    this.donadoresRepository = new InMemoryDonadoresRepo();
+    this.insigniasMemoryRepo = new InsigniasMemoryRepo();
+    this.misionesMemoryRepo = new MisionesMemoryRepo();
+    this.donadorEIncentivosMemoryRepo = new DonadorEIncentivosMemoryRepo();
   }
 
   @Override
-  public DonadorDTO agregarDonador(DonadorDTO donadorDTO) {
-    if (this.donadoresRepository.findById(donadorDTO.id()).isPresent()) {
-      throw new DonadorYaExistenteException("Ya existe un donador con ese ID");
+  public List<InsigniaDTO> obtenerInsignias(){
+    return insigniasMemoryRepo.findAll()
+            .orElse(List.of()).stream()
+            .map(i->insigniaMapper.toInsigniaDTO(i)).toList();
+  }
+
+  @Override
+  public InsigniaDTO obtenerInsigniaPorID(String insigniaID){
+    return insigniasMemoryRepo.findById(insigniaID)
+            .map(i->insigniaMapper.toInsigniaDTO(i))
+            .orElseThrow(()-> new NoSuchElementException("no existe insignia con ese ID"));
+  }
+
+  @Override
+  public InsigniaDTO agregarInsignia(InsigniaDTO insignia) {
+    if (insignia == null){
+      throw new RuntimeException("La insignia no puede ser nula");
     }
 
-    val donador = donadoresYEntidadesDataMapper.toDonador(donadorDTO);
-
-    val donadorGuardado = this.donadoresRepository.save(donador);
-
-    return donadoresYEntidadesDataMapper.toDonadorDTO(donadorGuardado);
-  }
-
-  @Override
-  public DonadorDTO buscarDonadorPorID(String donadorID) throws NoSuchElementException {
-    val donadorOptional = this.donadoresRepository.findById(donadorID);
-
-    if (donadorOptional.isEmpty()) {
-      throw new DonadorNoEncontradoException("No existe un donador con ese ID");
-    }
-    val donadorFinal = donadorOptional.get();
-
-    return donadoresYEntidadesDataMapper.toDonadorDTO(donadorFinal);
-  }
-
-  @Override
-  public DonadorDTO modificarEstado(String donadorID, EstadoDonadorEnum estado)
-      throws NoSuchElementException {
-
-    val donadorOptional = this.donadoresRepository.findById(donadorID);
-
-    if (donadorOptional.isEmpty()) {
-      throw new DonadorNoEncontradoException("No existe un donador con ese ID");
+    if (insignia.id()!=null && insigniasMemoryRepo.findById(insignia.id()).isPresent()){
+      throw new RuntimeException("La insignia con ese ID ya esta cargada en sistema");
     }
 
-    val donadorFinal = donadorOptional.get();
-    donadorFinal.setEstado(estado);
-
-    this.donadoresRepository.deleteById(donadorID);
-    this.donadoresRepository.save(donadorFinal);
-
-    return donadoresYEntidadesDataMapper.toDonadorDTO(donadorFinal);
+    Insignia insigniaAGuardar = insigniaMapper.toInsignia(insignia);
+    insigniasMemoryRepo.save(insigniaAGuardar);
+    return insigniaMapper.toInsigniaDTO(insigniaAGuardar);
   }
 
   @Override
-  public DonadorDTO modifcarCategoria(String donadorID, String categoria)
-      throws NoSuchElementException {
-    val donadorOptional = this.donadoresRepository.findById(donadorID);
-    if (donadorOptional.isEmpty()) {
-      throw new DonadorNoEncontradoException("No existe un donador con ese ID");
+  public List<MisionDTO> obtenerMisiones(){
+    return misionesMemoryRepo.findAll()
+            .orElse(List.of()).stream()
+            .map(m->misionMapper.toDTO(m)).toList();
+  }
+
+  @Override
+  public MisionDTO obtenerMisionPorID(String misionID){
+    return misionesMemoryRepo.findById(misionID)
+            .map(m->misionMapper.toDTO(m))
+            .orElseThrow(()-> new NoSuchElementException("no existe mision con ese ID"));
+  }
+
+  @Override
+  public MisionDTO agregarMision(MisionDTO mision) {
+    if (mision == null) {
+      throw new RuntimeException("La misión no puede ser nula");
     }
-    val donadorFinal = donadorOptional.get();
-    donadorFinal.setCategoria(categoria);
+    if (mision.id() != null && misionesMemoryRepo.findById(mision.id()).isPresent()) {
+      throw new RuntimeException("La misión ya existe en el sistema");
+    }
 
-    this.donadoresRepository.deleteById(donadorID);
-    this.donadoresRepository.save(donadorFinal);
-
-    return donadoresYEntidadesDataMapper.toDonadorDTO(donadorFinal);
+    Mision misionAGuardar = misionMapper.toMision(mision);
+    misionesMemoryRepo.save(misionAGuardar);
+    return misionMapper.toDTO(misionAGuardar);
   }
 
   @Override
-  public void setFachadaIncentivos(FachadaIncentivos fachadaIncentivos) {}
+  public List<InsigniaDTO> getInsigniasDeDonador(String donadorID) throws NoSuchElementException {
 
-  @Override
-  public Boolean puedeDonar(String donadorID) throws NoSuchElementException {
-    // A implementar por el alumno
-    return null;
+    List<Insignia> insigniasDelDonador = donadorEIncentivosMemoryRepo.insigniasDelDonador(donadorID);
+
+    if(insigniasDelDonador.isEmpty())
+      throw new RuntimeException("no existe insignias para ese ID");
+
+    return insigniasDelDonador.stream().map(i->insigniaMapper.toInsigniaDTO(i)).toList();
   }
 
   @Override
-  public List<NecesidadMaterialDTO> obtenerNecesidadesInsatisfechasDe(String productoSolicitadoID) {
-    // A implementar por el alumno
-    return List.of();
+  public MisionDTO getMisionEnCursoDeDonador(String donadorID) throws NoSuchElementException {
+    Mision misionActualDelDonador = donadorEIncentivosMemoryRepo.misionDelDonador(donadorID);
+
+    if (misionActualDelDonador == null){
+      throw new RuntimeException("No existe para ese ID");
+    }
+    return misionMapper.toDTO(misionActualDelDonador);
   }
 
   @Override
-  public List<QuejaDTO> obtenerQuejasDe(String donadorID) throws NoSuchElementException {
-    // A implementar por el alumno
-    return List.of();
+  public void asignarMisionADonador(String donadorID, MisionDTO misionDTO) throws NoSuchElementException {
+
+    //verifo que no sea una mision nula
+    if (misionDTO == null) throw new RuntimeException("La misión no puede ser nula");
+
+    //verifico que exista el donador
+    try{
+      fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
+    }
+    catch(RuntimeException e){
+      throw new RuntimeException("No existe donador con ese ID");
+    }
+
+    donadorEIncentivosMemoryRepo.agregarMision(donadorID,misionMapper.toMision(misionDTO));
+
   }
 
   @Override
-  public NecesidadMaterialDTO satisfacerNecesidad(String necesidadID, Integer cantidad)
-      throws NoSuchElementException {
-    // A implementar por el alumno
-    return null;
+  public void asignarInsigniaADonador(String donadorID, InsigniaDTO insigniaDTO) throws NoSuchElementException {
+
+    if (insigniaDTO == null) throw new RuntimeException("La insignia no puede ser nula");
+    try{
+      fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
+    }
+    catch (RuntimeException e){
+      throw new RuntimeException("No existe donador con ese ID");
+    }
+
+    Insignia insigniaNueva = insigniaMapper.toInsignia(insigniaDTO);
+    donadorEIncentivosMemoryRepo.agregarInsignia(donadorID,insigniaNueva);
+
   }
 
   @Override
-  public DonadorStatsDTO estadisticasDonador(String donadorID) {
-    return null;
+  public void procesarDonador(String donadorID) throws NoSuchElementException {
+
+    try{
+      //me aseguro que exista el donador
+      fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
+    }
+    catch (NoSuchElementException e){
+      throw new RuntimeException("No existe donador con ese ID");
+    }
+
+    //me traigo sus donaciones con su ID
+    List<DonacionDTO> donacionesDelDonador =
+            fachadaDonaciones.buscarPorDonadorYFechaInicio(donadorID, LocalDate.parse("2025-01-01"));
+
+    //me traigo tambien la mision actual
+    Mision misionActualDelDonador = misionMapper.toMision(this.getMisionEnCursoDeDonador(donadorID));
+
+
+    if(misionActualDelDonador.estaCompleta(donacionesDelDonador,fachadaDonaciones)){
+
+      //busco la insignia en el repo con el id de la misionactual, y la asigno al donador
+      insigniasMemoryRepo.findById(misionActualDelDonador.getInsigniaId()).
+              ifPresent(i->donadorEIncentivosMemoryRepo.agregarInsignia(donadorID,i));
+
+      //cambio la categoria del donador al completarse la mision puntual
+      fachadaDonadoresYEntidades.modifcarCategoria(donadorID,misionActualDelDonador.getCategoriaDonadorFin().toString());
+    }
+
   }
 
   @Override
-  public EntidadBeneficaDTO agregarEntidad(EntidadBeneficaDTO entidadBeneficaDTO) {
-    // A implementar por el alumno
-    return null;
+  public void setFachadaDonaciones(FachadaDonaciones fachadaDonaciones) {
+    this.fachadaDonaciones = fachadaDonaciones;
   }
 
   @Override
-  public EntidadBeneficaDTO buscarEntidadPorID(String entidadID) throws NoSuchElementException {
-    // A implementar por el alumno
-    return null;
-  }
-
-  @Override
-  public NecesidadMaterialDTO registrarNecesidad(NecesidadMaterialDTO necesidadMaterialDTO) {
-    // A implementar por el alumno
-    return null;
-  }
-
-  @Override
-  public QuejaDTO agregarQueja(QuejaDTO quejaDTO) throws NoSuchElementException {
-    // A implementar por el alumno
-    return null;
+  public void setFachadaDonadoresYEntidades(FachadaDonadoresYEntidades fachadaDonadoresYEntidades) {
+    this.fachadaDonadoresYEntidades = fachadaDonadoresYEntidades;
   }
 }

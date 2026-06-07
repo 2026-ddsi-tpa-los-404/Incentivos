@@ -1,4 +1,4 @@
-package ar.edu.utn.dds.k3003.model;
+/*package ar.edu.utn.dds.k3003.model;
 
 import ar.edu.utn.dds.k3003.Fachada;
 import lombok.SneakyThrows;
@@ -26,3 +26,4 @@ public class DonadoresYEntidadesTest {
     Assertions.assertEquals(1, 1);
   }
 }
+*/

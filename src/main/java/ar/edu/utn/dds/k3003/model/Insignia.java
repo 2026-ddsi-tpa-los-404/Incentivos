@@ -1,21 +1,32 @@
 package ar.edu.utn.dds.k3003.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "insignia")
+
 public class Insignia {
-    private String id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String nombre;
     private String descripcion;
 
-    public Insignia(String id, String nombre, String descripcion) {
-        this.id = id;
+    public Insignia() {
+    }
+
+    public Insignia(String nombre, String descripcion){
         this.nombre = nombre;
         this.descripcion = descripcion;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

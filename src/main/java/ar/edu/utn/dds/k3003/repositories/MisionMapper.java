@@ -8,7 +8,7 @@ public class MisionMapper {
     public MisionDTO toDTO(Mision mision) {
 
         return new MisionDTO(
-                mision.getId(),
+                mision.getId()!= null ? mision.getId().toString() : null,
                 mision.getNombre(),
                 mision.getInsigniaId(),
                 mision.getCategoriaDonadorInicio(),
@@ -19,10 +19,10 @@ public class MisionMapper {
 
     public Mision toMision(MisionDTO misionDTO) {
         return switch (misionDTO.tipo()){
-            case COMPLETITUD -> new Completitud(misionDTO.id(),misionDTO.nombre(),misionDTO.insigniaID(),misionDTO.categoriaFin(),misionDTO.categoriaInicio(),misionDTO.tipo());
-            case DONACIONES_EXITOSAS -> new DonacionesExitosas(misionDTO.id(),misionDTO.nombre(),misionDTO.insigniaID(),misionDTO.categoriaFin(),misionDTO.categoriaInicio(),misionDTO.tipo());
-            case REVOLUCION_DONADORA -> new RevolucionDonadora(misionDTO.id(),misionDTO.nombre(),misionDTO.insigniaID(),misionDTO.categoriaFin(),misionDTO.categoriaInicio(),misionDTO.tipo());
-            case DONACIONES_ASCENDENTES -> new DonacionesAscendentes(misionDTO.id(),misionDTO.nombre(),misionDTO.insigniaID(),misionDTO.categoriaFin(),misionDTO.categoriaInicio(),misionDTO.tipo()) ;
+            case COMPLETITUD -> new Completitud(misionDTO.nombre(),misionDTO.insigniaID(),misionDTO.categoriaFin(),misionDTO.categoriaInicio(),misionDTO.tipo());
+            case DONACIONES_EXITOSAS -> new DonacionesExitosas(misionDTO.nombre(),misionDTO.insigniaID(),misionDTO.categoriaFin(),misionDTO.categoriaInicio(),misionDTO.tipo());
+            case REVOLUCION_DONADORA -> new RevolucionDonadora(misionDTO.nombre(),misionDTO.insigniaID(),misionDTO.categoriaFin(),misionDTO.categoriaInicio(),misionDTO.tipo());
+            case DONACIONES_ASCENDENTES -> new DonacionesAscendentes(misionDTO.nombre(),misionDTO.insigniaID(),misionDTO.categoriaFin(),misionDTO.categoriaInicio(),misionDTO.tipo()) ;
         };
     }
 }

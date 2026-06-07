@@ -4,20 +4,32 @@ import ar.edu.utn.dds.k3003.catedra.dtos.donaciones.DonacionDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.CategoriaDonadorEnum;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.TipoMisionEnum;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonaciones;
+import jakarta.persistence.*;
 
 import java.util.List;
 
+@Entity
+@Table(name = "mision")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
 public abstract class Mision {
-    String id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
     String nombre;
     String insigniaId;
     Boolean completada;
+    @Enumerated(EnumType.STRING)
     CategoriaDonadorEnum categoriaDonadorInicio;
+    @Enumerated(EnumType.STRING)
     CategoriaDonadorEnum categoriaDonadorFin;
+    @Enumerated(EnumType.STRING)
     TipoMisionEnum tipoDeMision;
 
-    public Mision(String id, String nombre, String insigniaId, CategoriaDonadorEnum categoriaDonadorFin, CategoriaDonadorEnum categoriaDonadorInicio,TipoMisionEnum tipoDeMision) {
-        this.id = id;
+    public Mision() {
+    }
+
+    public Mision(String nombre, String insigniaId, CategoriaDonadorEnum categoriaDonadorFin, CategoriaDonadorEnum categoriaDonadorInicio, TipoMisionEnum tipoDeMision) {
         this.nombre = nombre;
         this.insigniaId = insigniaId;
         this.categoriaDonadorFin = categoriaDonadorFin;
@@ -28,7 +40,7 @@ public abstract class Mision {
 
     public abstract boolean estaCompleta(List<DonacionDTO> donaciones, FachadaDonaciones fachadaDonaciones);
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -36,7 +48,7 @@ public abstract class Mision {
         this.completada = completada;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 

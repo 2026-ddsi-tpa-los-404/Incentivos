@@ -4,6 +4,7 @@ import ar.edu.utn.dds.k3003.Fachada;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,5 +35,16 @@ public class MisionController {
         return fachada.agregarMision(misionDTO);
     }
 
+    @DeleteMapping("/{misionID}")
+    public ResponseEntity<String> deleteMision(@PathVariable String misionID) {
+        fachada.eliminarMision(misionID);
+        return ResponseEntity.ok("Se eliminó la misión con ID: " + misionID);
+    }
+
+    @DeleteMapping("limpiar")
+    public ResponseEntity<String> deleteAllMisiones() {
+        fachada.eliminarTodasLasMisiones();
+        return ResponseEntity.ok("Se eliminaron todas las misiones");
+    }
 
 }

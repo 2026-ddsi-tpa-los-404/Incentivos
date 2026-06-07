@@ -9,13 +9,10 @@
 
 🧩 Componente INCENTIVOS
 -
-
 ---
 
-🧩 Link al despliegue en Render : https://entrega-2-carlosherrera77-2026.onrender.com/
-🧩 Link al Swagger : https://entrega-2-carlosherrera77-2026.onrender.com/swagger-ui/index.html
+🧩 Link al despliegue en Render : https://incentivos-nhyc.onrender.com
 -
-
 ---
 
 ### ⚠️ Importante

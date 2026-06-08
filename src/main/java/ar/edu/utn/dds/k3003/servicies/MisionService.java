@@ -1,9 +1,10 @@
 package ar.edu.utn.dds.k3003.servicies;
 
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
+import ar.edu.utn.dds.k3003.exceptions.MisionNoEncontradaException;
 import ar.edu.utn.dds.k3003.model.Mision;
-import ar.edu.utn.dds.k3003.repositories.MisionMapper;
-import ar.edu.utn.dds.k3003.repositories.MisionesRepository;
+import ar.edu.utn.dds.k3003.repositories.mappers.MisionMapper;
+import ar.edu.utn.dds.k3003.repositories.Jpa.MisionesRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class MisionService {
     public MisionDTO obtenerMisionPorID(String misionID){
         return misionesRepository.findById(Long.parseLong(misionID))
                 .map(m->misionMapper.toDTO(m))
-                .orElseThrow(()-> new NoSuchElementException("no existe mision con ese ID"));
+                .orElseThrow(()-> new MisionNoEncontradaException(misionID));
     }
 
     public MisionDTO agregarMision(MisionDTO mision) {

@@ -1,4 +1,4 @@
-package ar.edu.utn.dds.k3003.repositories;
+package ar.edu.utn.dds.k3003.repositories.Jpa;
 
 import ar.edu.utn.dds.k3003.model.Insignia;
 import org.springframework.data.jpa.repository.JpaRepository;

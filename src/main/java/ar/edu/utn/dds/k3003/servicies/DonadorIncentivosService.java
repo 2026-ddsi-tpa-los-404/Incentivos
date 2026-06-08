@@ -1,12 +1,14 @@
 package ar.edu.utn.dds.k3003.servicies;
 
-import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
+import ar.edu.utn.dds.k3003.exceptions.DonadorNoEncontradoException;
+import ar.edu.utn.dds.k3003.exceptions.InsigniaNoEncontradaExpection;
+import ar.edu.utn.dds.k3003.exceptions.MisionNoEncontradaException;
 import ar.edu.utn.dds.k3003.model.DonadorIncentivos;
 import ar.edu.utn.dds.k3003.model.Insignia;
 import ar.edu.utn.dds.k3003.model.Mision;
-import ar.edu.utn.dds.k3003.repositories.DonadoresIncentivosRepository;
-import ar.edu.utn.dds.k3003.repositories.InsigniasRepository;
-import ar.edu.utn.dds.k3003.repositories.MisionesRepository;
+import ar.edu.utn.dds.k3003.repositories.Jpa.DonadoresIncentivosRepository;
+import ar.edu.utn.dds.k3003.repositories.Jpa.InsigniasRepository;
+import ar.edu.utn.dds.k3003.repositories.Jpa.MisionesRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -32,7 +34,7 @@ public class DonadorIncentivosService {
 
     public void agregarInsignia(String donadorId, String insigniaId) {
         Insignia insigniabuscada = insigniasRepository.findById(Long.parseLong(insigniaId))
-                .orElseThrow(() -> new NoSuchElementException("no existe insignia con ese ID"));
+                .orElseThrow(() -> new InsigniaNoEncontradaExpection(insigniaId));
 
         DonadorIncentivos donador = buscarOCrearDonador(donadorId);
         donador.getInsigniasDonador().add(insigniabuscada);
@@ -41,7 +43,7 @@ public class DonadorIncentivosService {
 
     public void asignarMision(String donadorId, String misionId) {
         Mision mision = misionesRepository.findById(Long.parseLong(misionId))
-                .orElseThrow(() -> new NoSuchElementException("no existe mision con ese ID"));
+                .orElseThrow(() -> new MisionNoEncontradaException(misionId));
         DonadorIncentivos donador = buscarOCrearDonador(donadorId);
         donador.setMisionActual(mision);
         donadoresIncentivosRepository.save(donador);
@@ -49,7 +51,7 @@ public class DonadorIncentivosService {
 
     public DonadorIncentivos obtenerDonador(String donadorId) {
         return donadoresIncentivosRepository.findByDonadorID(donadorId)
-                .orElseThrow(() -> new NoSuchElementException("No existe donador con ese ID"));
+                .orElseThrow(() -> new DonadorNoEncontradoException(donadorId));
     }
 
     public void eliminarDonador(String donadorId) {

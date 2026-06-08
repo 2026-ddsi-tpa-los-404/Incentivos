@@ -1,8 +1,11 @@
-package ar.edu.utn.dds.k3003.repositories;
+package ar.edu.utn.dds.k3003.repositories.mappers;
 
-import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.CategoriaDonadorEnum;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
 import ar.edu.utn.dds.k3003.model.*;
+import ar.edu.utn.dds.k3003.model.misiones.Completitud;
+import ar.edu.utn.dds.k3003.model.misiones.DonacionesAscendentes;
+import ar.edu.utn.dds.k3003.model.misiones.DonacionesExitosas;
+import ar.edu.utn.dds.k3003.model.misiones.RevolucionDonadora;
 
 public class MisionMapper {
     public MisionDTO toDTO(Mision mision) {

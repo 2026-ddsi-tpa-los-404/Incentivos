@@ -1,9 +1,10 @@
-package ar.edu.utn.dds.k3003.model;
+package ar.edu.utn.dds.k3003.model.misiones;
 
 import ar.edu.utn.dds.k3003.catedra.dtos.donaciones.DonacionDTO;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.CategoriaDonadorEnum;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.TipoMisionEnum;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonaciones;
+import ar.edu.utn.dds.k3003.model.Mision;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
@@ -11,7 +12,7 @@ import java.util.List;
 
 @Entity
 @DiscriminatorValue("REVOLUCION_DONADORA")
-public class RevolucionDonadora extends Mision{
+public class RevolucionDonadora extends Mision {
 
     public RevolucionDonadora(String nombre, String insigniaId, CategoriaDonadorEnum categoriaDonadorFin, CategoriaDonadorEnum categoriaDonadorInicio, TipoMisionEnum tipoDeMision) {
         super(nombre, insigniaId, categoriaDonadorFin, categoriaDonadorInicio, tipoDeMision);

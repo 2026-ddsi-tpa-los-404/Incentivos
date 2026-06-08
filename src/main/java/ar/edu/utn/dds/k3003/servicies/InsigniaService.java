@@ -1,9 +1,10 @@
 package ar.edu.utn.dds.k3003.servicies;
 
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.InsigniaDTO;
+import ar.edu.utn.dds.k3003.exceptions.InsigniaNoEncontradaExpection;
 import ar.edu.utn.dds.k3003.model.Insignia;
-import ar.edu.utn.dds.k3003.repositories.InsigniaMapper;
-import ar.edu.utn.dds.k3003.repositories.InsigniasRepository;
+import ar.edu.utn.dds.k3003.repositories.mappers.InsigniaMapper;
+import ar.edu.utn.dds.k3003.repositories.Jpa.InsigniasRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class InsigniaService {
     public InsigniaDTO obtenerInsigniaPorID(String insigniaID){
         return insigniasRepository.findById(Long.parseLong(insigniaID))
                 .map(i->insigniaMapper.toInsigniaDTO(i))
-                .orElseThrow(()-> new NoSuchElementException("no existe insignia con ese ID"));
+                .orElseThrow(()-> new InsigniaNoEncontradaExpection(insigniaID));
     }
 
 

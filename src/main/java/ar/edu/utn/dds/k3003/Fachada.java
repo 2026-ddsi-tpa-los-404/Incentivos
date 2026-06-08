@@ -29,7 +29,6 @@ import java.util.NoSuchElementException;
   private FachadaDonaciones fachadaDonaciones;
   private FachadaDonadoresYEntidades fachadaDonadoresYEntidades;
 
-  private MisionMapper misionMapper = new MisionMapper();
   private InsigniaMapper insigniaMapper = new InsigniaMapper();
 
   public Fachada(InsigniaService insigniaService,MisionService misionService ,DonadorIncentivosService donadorIncentivosService) {
@@ -112,7 +111,7 @@ import java.util.NoSuchElementException;
       throw new RuntimeException("No existe mision para ese ID");
     }
 
-    return misionMapper.toDTO(misionDonador);
+    return misionService.misionToDTO(misionDonador);
   }
 
   @Override
@@ -154,7 +153,7 @@ import java.util.NoSuchElementException;
     if (misionActualDelDonador == null) throw new RuntimeException("El donador no tiene misión asignada");
 
     if (misionActualDelDonador.estaCompleta(donacionesDelDonador, fachadaDonaciones)) {
-      donadorIncentivosService.agregarInsignia(donadorID, misionActualDelDonador.getInsigniaId());
+      donadorIncentivosService.agregarInsignia(donadorID, misionActualDelDonador.getInsignia().getId().toString());
       fachadaDonadoresYEntidades.modifcarCategoria(donadorID, misionActualDelDonador.getCategoriaDonadorFin().toString());
     }
   }

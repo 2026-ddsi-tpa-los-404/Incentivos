@@ -3,6 +3,7 @@ package ar.edu.utn.dds.k3003.servicies;
 import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
 import ar.edu.utn.dds.k3003.exceptions.MisionNoEncontradaException;
 import ar.edu.utn.dds.k3003.model.Mision;
+import ar.edu.utn.dds.k3003.repositories.Jpa.InsigniasRepository;
 import ar.edu.utn.dds.k3003.repositories.mappers.MisionMapper;
 import ar.edu.utn.dds.k3003.repositories.Jpa.MisionesRepository;
 import org.springframework.stereotype.Service;
@@ -12,12 +13,14 @@ import java.util.NoSuchElementException;
 
 @Service
 public class MisionService {
+    InsigniasRepository insigniasRepository;
     MisionesRepository misionesRepository;
     MisionMapper misionMapper;
 
-    public MisionService(MisionesRepository misionesRepository) {
-        this.misionMapper = new MisionMapper();
+    public MisionService(MisionesRepository misionesRepository, InsigniasRepository insigniasRepository) {
         this.misionesRepository = misionesRepository;
+        this.insigniasRepository = insigniasRepository;
+        this.misionMapper = new MisionMapper(insigniasRepository);
     }
 
     public List<MisionDTO> obtenerMisiones(){
@@ -48,5 +51,9 @@ public class MisionService {
 
     public void eliminarTodasLasMisiones() {
         misionesRepository.deleteAll();
+    }
+
+    public MisionDTO misionToDTO(Mision mision) {
+        return misionMapper.toDTO(mision);
     }
 }

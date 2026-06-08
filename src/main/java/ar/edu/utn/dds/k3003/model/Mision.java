@@ -17,7 +17,11 @@ public abstract class Mision {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     String nombre;
-    String insigniaId;
+
+    @ManyToOne
+    @JoinColumn(name = "insignia_id")
+    Insignia insignia;
+
     Boolean completada;
     @Enumerated(EnumType.STRING)
     CategoriaDonadorEnum categoriaDonadorInicio;
@@ -29,9 +33,9 @@ public abstract class Mision {
     public Mision() {
     }
 
-    public Mision(String nombre, String insigniaId, CategoriaDonadorEnum categoriaDonadorFin, CategoriaDonadorEnum categoriaDonadorInicio, TipoMisionEnum tipoDeMision) {
+    public Mision(String nombre, Insignia insignia, CategoriaDonadorEnum categoriaDonadorFin, CategoriaDonadorEnum categoriaDonadorInicio, TipoMisionEnum tipoDeMision) {
         this.nombre = nombre;
-        this.insigniaId = insigniaId;
+        this.insignia = insignia;
         this.categoriaDonadorFin = categoriaDonadorFin;
         this.categoriaDonadorInicio = categoriaDonadorInicio;
         this.completada = false;
@@ -56,8 +60,8 @@ public abstract class Mision {
         return nombre;
     }
 
-    public String getInsigniaId() {
-        return insigniaId;
+    public Insignia  getInsignia() {
+        return insignia;
     }
 
     public Boolean getCompletada() {

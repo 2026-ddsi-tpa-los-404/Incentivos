@@ -13,7 +13,7 @@
 
 🧩 Link al despliegue en Render : https://incentivos-nhyc.onrender.com
 
-🧩 Link al despliegue en Render : https://incentivos-nhyc.onrender.com/swagger-ui/index.html
+🧩 Link al swagger: https://incentivos-nhyc.onrender.com/swagger-ui/index.html
 -
 ---
 

@@ -99,7 +99,6 @@ import java.util.NoSuchElementException;
       throw new RuntimeException("no existe insignias para ese ID");
 
     return insigniasDonador.stream().map(i->insigniaMapper.toInsigniaDTO(i)).toList();
-
   }
 
   @Override
@@ -131,7 +130,7 @@ import java.util.NoSuchElementException;
     try {
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
     } catch (RuntimeException e) {
-      throw new RuntimeException("No existe donador con ese ID");
+      throw new RuntimeException("Error al buscar donador: " + e.getMessage());
     }
     donadorIncentivosService.agregarInsignia(donadorID, insigniaDTO.id());
   }

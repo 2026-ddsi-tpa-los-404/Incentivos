@@ -51,12 +51,12 @@ public class DonadorIncentivosService {
 
     public DonadorIncentivos obtenerDonador(String donadorId) {
         return donadoresIncentivosRepository.findByDonadorID(donadorId)
-                .orElseThrow(() -> new DonadorNoEncontradoException(donadorId));
+                .orElseThrow(() -> new DonadorNoEncontradoException("El donador " + donadorId + " no tiene insignias ni misiones asignadas"));
     }
 
     public void eliminarDonador(String donadorId) {
         DonadorIncentivos donador = buscarOCrearDonador(donadorId);
-        donador.getInsigniasDonador().clear(); // limpia la tabla intermedia
+        donador.getInsigniasDonador().clear(); // esta limpiando la tabla intermedia
         donadoresIncentivosRepository.save(donador);
         donadoresIncentivosRepository.delete(donador);
     }

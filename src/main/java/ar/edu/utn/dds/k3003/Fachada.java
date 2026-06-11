@@ -6,6 +6,7 @@ import ar.edu.utn.dds.k3003.catedra.dtos.incentivos.MisionDTO;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonaciones;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaIncentivos;
+import ar.edu.utn.dds.k3003.exceptions.DonadorNoEncontradoException;
 import ar.edu.utn.dds.k3003.model.DonadorIncentivos;
 import ar.edu.utn.dds.k3003.model.Insignia;
 import ar.edu.utn.dds.k3003.model.Mision;
@@ -119,7 +120,7 @@ import java.util.NoSuchElementException;
     try {
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
     } catch (RuntimeException e) {
-      throw new RuntimeException("No existe donador con ese ID");
+      throw new DonadorNoEncontradoException("No existe donador con ID: " + donadorID);
     }
     donadorIncentivosService.asignarMision(donadorID, misionDTO.id());
   }
@@ -130,7 +131,7 @@ import java.util.NoSuchElementException;
     try {
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
     } catch (RuntimeException e) {
-      throw new RuntimeException("Error al buscar donador: " + e.getMessage());
+      throw new DonadorNoEncontradoException("No existe donador con ID: " + donadorID);
     }
     donadorIncentivosService.agregarInsignia(donadorID, insigniaDTO.id());
   }

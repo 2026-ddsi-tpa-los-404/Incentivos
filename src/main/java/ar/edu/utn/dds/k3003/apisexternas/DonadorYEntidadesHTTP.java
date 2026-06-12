@@ -3,6 +3,8 @@ package ar.edu.utn.dds.k3003.apisexternas;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.*;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaIncentivos;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -16,21 +18,39 @@ import java.util.NoSuchElementException;
 public class DonadorYEntidadesHTTP implements FachadaDonadoresYEntidades {
 
     private DonadorClient donadorClient;
+    private Counter donadoresOkCounter;
+    private Counter donadoresErrorCounter;
 
-    public DonadorYEntidadesHTTP(DonadorClient donadorClient) {
+    public DonadorYEntidadesHTTP(DonadorClient donadorClient, MeterRegistry registry) {
         this.donadorClient = donadorClient;
+        this.donadoresOkCounter = registry.counter("incentivos.http.donadores", "status", "ok");
+        this.donadoresErrorCounter = registry.counter("incentivos.http.donadores", "status", "error");
     }
 
     @Override
     public DonadorDTO buscarDonadorPorID(String donadorID) throws NoSuchElementException {
-        return donadorClient.buscarPorID(donadorID);
+        try {
+            DonadorDTO resultado = donadorClient.buscarPorID(donadorID);
+            donadoresOkCounter.increment();
+            return resultado;
+        } catch (Exception e) {
+            donadoresErrorCounter.increment();
+            throw e;
+        }
     }
 
     @Override
     public DonadorDTO modifcarCategoria(String donadorID, String categoria) throws NoSuchElementException {
-        Map<String, String> body = new HashMap<>();
-        body.put("categoria", categoria);
-        return donadorClient.modifcarCategoria(donadorID, body);
+        try {
+            Map<String, String> body = new HashMap<>();
+            body.put("categoria", categoria);
+            DonadorDTO resultado = donadorClient.modifcarCategoria(donadorID, body);
+            donadoresOkCounter.increment();
+            return resultado;
+        } catch (Exception e) {
+            donadoresErrorCounter.increment();
+            throw e;
+        }
     }
 
     @Override

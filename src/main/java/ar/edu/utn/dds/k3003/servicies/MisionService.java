@@ -6,6 +6,8 @@ import ar.edu.utn.dds.k3003.model.Mision;
 import ar.edu.utn.dds.k3003.repositories.Jpa.InsigniasRepository;
 import ar.edu.utn.dds.k3003.repositories.mappers.MisionMapper;
 import ar.edu.utn.dds.k3003.repositories.Jpa.MisionesRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,11 +18,15 @@ public class MisionService {
     InsigniasRepository insigniasRepository;
     MisionesRepository misionesRepository;
     MisionMapper misionMapper;
+    private Counter misionesAgregadasCounter;
 
-    public MisionService(MisionesRepository misionesRepository, InsigniasRepository insigniasRepository) {
+    public MisionService(MisionesRepository misionesRepository,
+                         InsigniasRepository insigniasRepository,
+                         MeterRegistry registry) {
         this.misionesRepository = misionesRepository;
         this.insigniasRepository = insigniasRepository;
         this.misionMapper = new MisionMapper(insigniasRepository);
+        this.misionesAgregadasCounter = registry.counter("incentivos.misiones.agregadas");
     }
 
     public List<MisionDTO> obtenerMisiones(){
@@ -42,6 +48,7 @@ public class MisionService {
 
         Mision misionAGuardar = misionMapper.toMision(mision);
         misionesRepository.save(misionAGuardar);
+        misionesAgregadasCounter.increment();
         return misionMapper.toDTO(misionAGuardar);
     }
 

@@ -7,6 +7,8 @@ import ar.edu.utn.dds.k3003.catedra.dtos.donaciones.ProductoDTO;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonaciones;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaLogistica;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -19,19 +21,37 @@ import java.util.NoSuchElementException;
 @Component
 public class DonacionesHTTP implements FachadaDonaciones {
     private DonacionesClient donacionesClient;
+    private Counter donacionesOkCounter;
+    private Counter donacionesErrorCounter;
 
-    public DonacionesHTTP(DonacionesClient donacionesClient) {
+    public DonacionesHTTP(DonacionesClient donacionesClient, MeterRegistry registry) {
         this.donacionesClient = donacionesClient;
+        this.donacionesOkCounter = registry.counter("incentivos.http.donaciones", "status", "ok");
+        this.donacionesErrorCounter = registry.counter("incentivos.http.donaciones", "status", "error");
     }
 
     @Override
     public List<DonacionDTO> buscarPorDonadorYFechaInicio(String donadorID, LocalDate fecha) {
-        return donacionesClient.buscarPorDonadorYFecha(donadorID, fecha.toString());
+        try {
+            List<DonacionDTO> resultado = donacionesClient.buscarPorDonadorYFecha(donadorID, fecha.toString());
+            donacionesOkCounter.increment();
+            return resultado;
+        } catch (Exception e) {
+            donacionesErrorCounter.increment();
+            throw e;
+        }
     }
 
     @Override
     public ProductoDTO buscarProductoPorID(String productoID) throws NoSuchElementException {
-        return donacionesClient.buscarProductoPorID(productoID);
+        try {
+            ProductoDTO resultado = donacionesClient.buscarProductoPorID(productoID);
+            donacionesOkCounter.increment();
+            return resultado;
+        } catch (Exception e) {
+            donacionesErrorCounter.increment();
+            throw e;
+        }
     }
 
 

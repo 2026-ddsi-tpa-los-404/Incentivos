@@ -7,6 +7,7 @@ import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonaciones;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaIncentivos;
 import ar.edu.utn.dds.k3003.exceptions.DonadorNoEncontradoException;
+import ar.edu.utn.dds.k3003.exceptions.MisionNoCompletadaException;
 import ar.edu.utn.dds.k3003.model.DonadorIncentivos;
 import ar.edu.utn.dds.k3003.model.Insignia;
 import ar.edu.utn.dds.k3003.model.Mision;
@@ -15,6 +16,8 @@ import ar.edu.utn.dds.k3003.repositories.mappers.MisionMapper;
 import ar.edu.utn.dds.k3003.servicies.DonadorIncentivosService;
 import ar.edu.utn.dds.k3003.servicies.InsigniaService;
 import ar.edu.utn.dds.k3003.servicies.MisionService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -29,19 +32,26 @@ import java.util.NoSuchElementException;
   private DonadorIncentivosService donadorIncentivosService;
   private FachadaDonaciones fachadaDonaciones;
   private FachadaDonadoresYEntidades fachadaDonadoresYEntidades;
-
   private InsigniaMapper insigniaMapper = new InsigniaMapper();
+
+  private Counter donadorProcesadoOkCounter;
+  private Counter donadorProcesadoErrorCounter;
+  private Counter misionesCompletadasCounter;
 
   public Fachada(InsigniaService insigniaService,
                  MisionService misionService,
                  DonadorIncentivosService donadorIncentivosService,
                  FachadaDonaciones fachadaDonaciones,
-                 FachadaDonadoresYEntidades fachadaDonadoresYEntidades) {
+                 FachadaDonadoresYEntidades fachadaDonadoresYEntidades,
+                 MeterRegistry registry) {
     this.insigniaService = insigniaService;
     this.misionService = misionService;
     this.donadorIncentivosService = donadorIncentivosService;
     this.fachadaDonaciones = fachadaDonaciones;
     this.fachadaDonadoresYEntidades = fachadaDonadoresYEntidades;
+    this.donadorProcesadoOkCounter = registry.counter("incentivos.donador.procesado", "status", "ok");
+    this.donadorProcesadoErrorCounter = registry.counter("incentivos.donador.procesado", "status", "error");
+    this.misionesCompletadasCounter = registry.counter("incentivos.misiones.completadas");
   }
 
   /*------------------------INSIGNIAS--------------------------------------*/
@@ -144,10 +154,10 @@ import java.util.NoSuchElementException;
 
   @Override
   public void procesarDonador(String donadorID) throws NoSuchElementException {
-
     try {
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
     } catch (NoSuchElementException e) {
+      donadorProcesadoErrorCounter.increment();
       throw new RuntimeException("No existe donador con ese ID");
     }
 
@@ -156,12 +166,21 @@ import java.util.NoSuchElementException;
 
     Mision misionActualDelDonador = donadorIncentivosService.obtenerDonador(donadorID).getMisionActual();
 
-    if (misionActualDelDonador == null) throw new RuntimeException("El donador no tiene misión asignada");
+    if (misionActualDelDonador == null) {
+      donadorProcesadoErrorCounter.increment();
+      throw new RuntimeException("El donador no tiene misión asignada");
+    }
 
     if (misionActualDelDonador.estaCompleta(donacionesDelDonador, fachadaDonaciones)) {
       donadorIncentivosService.agregarInsignia(donadorID, misionActualDelDonador.getInsignia().getId().toString());
       fachadaDonadoresYEntidades.modifcarCategoria(donadorID, misionActualDelDonador.getCategoriaDonadorFin().toString());
+      misionesCompletadasCounter.increment();
     }
+    else {
+      throw new MisionNoCompletadaException(donadorID);
+    }
+
+    donadorProcesadoOkCounter.increment();
   }
 
     public void eliminarDonadorIncentivos(String donadorID) {

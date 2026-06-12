@@ -34,5 +34,10 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ExceptionHandler(MisionNoCompletadaException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public String handleMisionNoCompletada(MisionNoCompletadaException e) {
+        return e.getMessage();
+    }
 
 }

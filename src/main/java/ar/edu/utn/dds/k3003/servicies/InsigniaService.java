@@ -25,8 +25,8 @@ public class InsigniaService {
     public InsigniaService(InsigniasRepository insigniasRepository,MeterRegistry registry) {
         this.insigniasRepository = insigniasRepository;
         this.insigniaMapper = new InsigniaMapper();
-        this.insigniasAgregadasCounter = registry.counter("incentivos.insignias.consultadas");
-        this.insigniasAgregadasCounter = registry.counter("incentivos.insignias.agregadas");
+        this.insigniasConsultadasCounter  = registry.counter("incentivos.insignias.consultadas");
+        this.insigniasAgregadasCounter  = registry.counter("incentivos.insignias.agregadas");
 
     }
 

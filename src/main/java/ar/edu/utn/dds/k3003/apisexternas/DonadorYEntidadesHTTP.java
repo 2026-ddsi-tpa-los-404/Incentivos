@@ -1,39 +1,40 @@
-package ar.edu.utn.dds.k3003.model;
+package ar.edu.utn.dds.k3003.apisexternas;
 
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.*;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaIncentivos;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Component
 public class DonadorYEntidadesHTTP implements FachadaDonadoresYEntidades {
 
-    private RestTemplate restTemplate;
-    private String url;
+    private DonadorClient donadorClient;
 
-    public DonadorYEntidadesHTTP(@Value("${url.donadores}") String url) {
-        this.restTemplate = new RestTemplate();
-        this.url = url;
-    }
-
-    @Override
-    public DonadorDTO agregarDonador(DonadorDTO donadorDTO) {
-        return null;
+    public DonadorYEntidadesHTTP(DonadorClient donadorClient) {
+        this.donadorClient = donadorClient;
     }
 
     @Override
     public DonadorDTO buscarDonadorPorID(String donadorID) throws NoSuchElementException {
-        return restTemplate.getForObject(url + "/donadores/" + donadorID, DonadorDTO.class);
+        return donadorClient.buscarPorID(donadorID);
     }
 
     @Override
     public DonadorDTO modifcarCategoria(String donadorID, String categoria) throws NoSuchElementException {
+        Map<String, String> body = new HashMap<>();
+        body.put("categoria", categoria);
+        return donadorClient.modifcarCategoria(donadorID, body);
+    }
+
+    @Override
+    public DonadorDTO agregarDonador(DonadorDTO donadorDTO) {
         return null;
     }
 

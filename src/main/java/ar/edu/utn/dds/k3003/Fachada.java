@@ -15,27 +15,33 @@ import ar.edu.utn.dds.k3003.repositories.mappers.MisionMapper;
 import ar.edu.utn.dds.k3003.servicies.DonadorIncentivosService;
 import ar.edu.utn.dds.k3003.servicies.InsigniaService;
 import ar.edu.utn.dds.k3003.servicies.MisionService;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-
+@Component
   public class Fachada implements FachadaIncentivos{
 
   private InsigniaService insigniaService;
   private MisionService misionService;
   private DonadorIncentivosService donadorIncentivosService;
-
   private FachadaDonaciones fachadaDonaciones;
   private FachadaDonadoresYEntidades fachadaDonadoresYEntidades;
 
   private InsigniaMapper insigniaMapper = new InsigniaMapper();
 
-  public Fachada(InsigniaService insigniaService,MisionService misionService ,DonadorIncentivosService donadorIncentivosService) {
+  public Fachada(InsigniaService insigniaService,
+                 MisionService misionService,
+                 DonadorIncentivosService donadorIncentivosService,
+                 FachadaDonaciones fachadaDonaciones,
+                 FachadaDonadoresYEntidades fachadaDonadoresYEntidades) {
     this.insigniaService = insigniaService;
     this.misionService = misionService;
     this.donadorIncentivosService = donadorIncentivosService;
+    this.fachadaDonaciones = fachadaDonaciones;
+    this.fachadaDonadoresYEntidades = fachadaDonadoresYEntidades;
   }
 
   /*------------------------INSIGNIAS--------------------------------------*/

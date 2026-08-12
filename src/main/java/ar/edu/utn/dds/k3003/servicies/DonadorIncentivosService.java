@@ -11,6 +11,7 @@ import ar.edu.utn.dds.k3003.repositories.Jpa.InsigniasRepository;
 import ar.edu.utn.dds.k3003.repositories.Jpa.MisionesRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -41,6 +42,15 @@ public class DonadorIncentivosService {
         donadoresIncentivosRepository.save(donador);
     }
 
+    public void quitarInsignia(String donadorId, String insigniaId) {
+        Insignia insigniaBuscada = insigniasRepository.findById(Long.parseLong(insigniaId))
+                .orElseThrow(() -> new InsigniaNoEncontradaExpection(insigniaId));
+
+        DonadorIncentivos donador = buscarOCrearDonador(donadorId);
+        donador.getInsigniasDonador().removeIf(i -> i.getId().equals(insigniaBuscada.getId()));
+        donadoresIncentivosRepository.save(donador);
+    }
+
     public void asignarMision(String donadorId, String misionId) {
         Mision mision = misionesRepository.findById(Long.parseLong(misionId))
                 .orElseThrow(() -> new MisionNoEncontradaException(misionId));
@@ -52,6 +62,10 @@ public class DonadorIncentivosService {
     public DonadorIncentivos obtenerDonador(String donadorId) {
         return donadoresIncentivosRepository.findByDonadorID(donadorId)
                 .orElseThrow(() -> new DonadorNoEncontradoException("El donador " + donadorId + " no tiene insignias ni misiones asignadas"));
+    }
+
+    public List<DonadorIncentivos> obtenerTodos() {
+        return donadoresIncentivosRepository.findAll();
     }
 
     public void eliminarDonador(String donadorId) {

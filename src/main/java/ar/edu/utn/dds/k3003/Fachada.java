@@ -37,6 +37,7 @@ import java.util.NoSuchElementException;
   private Counter donadorProcesadoOkCounter;
   private Counter donadorProcesadoErrorCounter;
   private Counter misionesCompletadasCounter;
+  private Counter misionesRevertidasCounter;
 
   public Fachada(InsigniaService insigniaService,
                  MisionService misionService,
@@ -52,6 +53,7 @@ import java.util.NoSuchElementException;
     this.donadorProcesadoOkCounter = registry.counter("incentivos.donador.procesado", "status", "ok");
     this.donadorProcesadoErrorCounter = registry.counter("incentivos.donador.procesado", "status", "error");
     this.misionesCompletadasCounter = registry.counter("incentivos.misiones.completadas");
+    this.misionesRevertidasCounter = registry.counter("incentivos.misiones.revertidas");
   }
 
   /*------------------------INSIGNIAS--------------------------------------*/
@@ -168,16 +170,23 @@ import java.util.NoSuchElementException;
 
     if (misionActualDelDonador == null) {
       donadorProcesadoErrorCounter.increment();
-      throw new RuntimeException("El donador no tiene misión asignada");
+      return;
     }
 
-    if (misionActualDelDonador.estaCompleta(donacionesDelDonador, fachadaDonaciones)) {
+    boolean completa = misionActualDelDonador.estaCompleta(donacionesDelDonador, fachadaDonaciones);
+    boolean tieneInsignia = this.donadorTieneInsignia(donadorID,misionActualDelDonador.getInsignia().getId().toString());
+
+    if(completa && !tieneInsignia){
       donadorIncentivosService.agregarInsignia(donadorID, misionActualDelDonador.getInsignia().getId().toString());
       fachadaDonadoresYEntidades.modifcarCategoria(donadorID, misionActualDelDonador.getCategoriaDonadorFin().toString());
+      misionActualDelDonador.setCompletada(true);
       misionesCompletadasCounter.increment();
     }
-    else {
-      throw new MisionNoCompletadaException(donadorID);
+    else if (!completa && tieneInsignia) {
+      donadorIncentivosService.quitarInsignia(donadorID, misionActualDelDonador.getInsignia().getId().toString());
+      fachadaDonadoresYEntidades.modifcarCategoria(donadorID, misionActualDelDonador.getCategoriaDonadorInicio().toString());
+      misionActualDelDonador.setCompletada(false);
+      misionesRevertidasCounter.increment();
     }
 
     donadorProcesadoOkCounter.increment();
@@ -190,6 +199,12 @@ import java.util.NoSuchElementException;
     public void eliminarTodosLosDonadores() {
       donadorIncentivosService.eliminarTodos();
     }
+
+  private boolean donadorTieneInsignia(String donadorID, String insigniaID) {
+    return donadorIncentivosService.obtenerDonador(donadorID)
+            .getInsigniasDonador().stream()
+            .anyMatch(i -> i.getId().toString().equals(insigniaID));
+  }
 
   @Override
   public void setFachadaDonaciones(FachadaDonaciones fachadaDonaciones) {

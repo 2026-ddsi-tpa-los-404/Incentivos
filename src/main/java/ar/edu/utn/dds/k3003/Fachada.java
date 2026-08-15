@@ -112,12 +112,19 @@ import java.util.NoSuchElementException;
   public List<InsigniaDTO> getInsigniasDeDonador(String donadorID) throws NoSuchElementException {
 
     DonadorIncentivos donador = donadorIncentivosService.obtenerDonador(donadorID);
+
+
+    /* lo quito para mejorar cuando hacen consulta y no tiene nada asignado
     List<Insignia> insigniasDonador = donador.getInsigniasDonador();
 
     if(insigniasDonador.isEmpty())
       throw new RuntimeException("no existe insignias para ese ID");
 
-    return insigniasDonador.stream().map(i->insigniaMapper.toInsigniaDTO(i)).toList();
+    return insigniasDonador.stream().map(i->insigniaMapper.toInsigniaDTO(i)).toList();*/
+
+    return donador.getInsigniasDonador().stream()
+            .map(i -> insigniaMapper.toInsigniaDTO(i))
+            .toList();
   }
 
   @Override

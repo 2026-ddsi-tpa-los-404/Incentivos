@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class ProcesadorDonadoresJob {
@@ -23,6 +24,7 @@ public class ProcesadorDonadoresJob {
     }
 
     @Scheduled(fixedRate = 15000)  // cada 15 segundos
+    @Transactional
     public void procesarDonadoresPeriodicamente() {
         log.info("[JOB] Iniciando procesamiento de donadores");
 

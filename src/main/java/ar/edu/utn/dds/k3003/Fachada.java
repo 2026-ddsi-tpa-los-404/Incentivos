@@ -20,6 +20,7 @@ import ar.edu.utn.dds.k3003.servicies.InsigniaService;
 import ar.edu.utn.dds.k3003.servicies.MisionService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -40,10 +41,10 @@ import java.util.NoSuchElementException;
   private FachadaDonadoresYEntidades fachadaDonadoresYEntidades;
   private InsigniaMapper insigniaMapper = new InsigniaMapper();
 
+  private MeterRegistry registry;
   private Counter donadorProcesadoOkCounter;
   private Counter donadorProcesadoErrorCounter;
-  private Counter misionesCompletadasCounter;
-  private Counter misionesRevertidasCounter;
+  private Timer procesamientoTimer;
 
   public Fachada(InsigniaService insigniaService,
                  MisionService misionService,
@@ -56,10 +57,12 @@ import java.util.NoSuchElementException;
     this.donadorIncentivosService = donadorIncentivosService;
     this.fachadaDonaciones = fachadaDonaciones;
     this.fachadaDonadoresYEntidades = fachadaDonadoresYEntidades;
+    this.registry = registry;
     this.donadorProcesadoOkCounter = registry.counter("incentivos.donador.procesado", "status", "ok");
     this.donadorProcesadoErrorCounter = registry.counter("incentivos.donador.procesado", "status", "error");
-    this.misionesCompletadasCounter = registry.counter("incentivos.misiones.completadas");
-    this.misionesRevertidasCounter = registry.counter("incentivos.misiones.revertidas");
+    this.procesamientoTimer = Timer.builder("incentivos.donador.procesamiento.duracion")
+            .description("Tiempo que tarda procesar un donador")
+            .register(registry);
   }
 
   /*------------------------INSIGNIAS--------------------------------------*/
@@ -167,6 +170,15 @@ import java.util.NoSuchElementException;
 
   @Override
   public void procesarDonador(String donadorID) throws NoSuchElementException {
+    Timer.Sample inicio = Timer.start(registry);
+    try {
+      evaluarMisionDelDonador(donadorID);
+    } finally {
+      inicio.stop(procesamientoTimer);
+    }
+  }
+
+  private void evaluarMisionDelDonador(String donadorID) {
     try {
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
     } catch (NoSuchElementException e) {
@@ -199,19 +211,24 @@ import java.util.NoSuchElementException;
     if (completa && !tieneInsignia) {
       donadorIncentivosService.agregarInsignia(donadorID, insigniaID);
       fachadaDonadoresYEntidades.modifcarCategoria(donadorID, mision.getCategoriaDonadorFin().toString());
-      misionesCompletadasCounter.increment();
+      registrarResultadoMision("incentivos.misiones.completadas", mision, mision.getCategoriaDonadorFin().name(), "sube");
       log.info("Misión '{}' completada por el donador {}: se otorga la insignia {} y pasa a categoría {}",
               mision.getNombre(), donadorID, insigniaID, mision.getCategoriaDonadorFin());
     }
     else if (!completa && tieneInsignia) {
       donadorIncentivosService.quitarInsignia(donadorID, insigniaID);
       fachadaDonadoresYEntidades.modifcarCategoria(donadorID, mision.getCategoriaDonadorInicio().toString());
-      misionesRevertidasCounter.increment();
+      registrarResultadoMision("incentivos.misiones.revertidas", mision, mision.getCategoriaDonadorInicio().name(), "baja");
       log.info("El donador {} dejó de cumplir la misión '{}': se revoca la insignia {} y vuelve a categoría {}",
               donadorID, mision.getNombre(), insigniaID, mision.getCategoriaDonadorInicio());
     }
 
     donadorProcesadoOkCounter.increment();
+  }
+
+  private void registrarResultadoMision(String metrica, Mision mision, String nuevaCategoria, String direccion) {
+    registry.counter(metrica, "tipo", String.valueOf(mision.getTipoDeMision())).increment();
+    registry.counter("incentivos.categoria.cambios", "categoria", nuevaCategoria, "direccion", direccion).increment();
   }
 
     public void eliminarDonadorIncentivos(String donadorID) {

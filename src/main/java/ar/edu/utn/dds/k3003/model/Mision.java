@@ -22,7 +22,6 @@ public abstract class Mision {
     @JoinColumn(name = "insignia_id")
     Insignia insignia;
 
-    Boolean completada;
     @Enumerated(EnumType.STRING)
     CategoriaDonadorEnum categoriaDonadorInicio;
     @Enumerated(EnumType.STRING)
@@ -38,7 +37,6 @@ public abstract class Mision {
         this.insignia = insignia;
         this.categoriaDonadorFin = categoriaDonadorFin;
         this.categoriaDonadorInicio = categoriaDonadorInicio;
-        this.completada = false;
         this.tipoDeMision = tipoDeMision;
     }
 
@@ -48,9 +46,6 @@ public abstract class Mision {
         this.id = id;
     }
 
-    public void setCompletada(Boolean completada) {
-        this.completada = completada;
-    }
 
     public Long getId() {
         return id;
@@ -62,10 +57,6 @@ public abstract class Mision {
 
     public Insignia  getInsignia() {
         return insignia;
-    }
-
-    public Boolean getCompletada() {
-        return completada;
     }
 
     public CategoriaDonadorEnum getCategoriaDonadorInicio() {

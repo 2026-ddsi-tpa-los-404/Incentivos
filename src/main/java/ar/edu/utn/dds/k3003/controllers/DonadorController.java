@@ -35,8 +35,9 @@ public class DonadorController {
   }
 
     @GetMapping("/{donadorID}/mision")
-    public MisionDTO getMisionDeDonadorByID(@PathVariable String donadorID){
-        return fachada.getMisionEnCursoDeDonador(donadorID);
+    public ResponseEntity<MisionDTO> getMisionDeDonadorByID(@PathVariable String donadorID){
+        MisionDTO mision = fachada.getMisionEnCursoDeDonador(donadorID);
+        return mision == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(mision);
     }
 
     @PostMapping("/{donadorID}/mision")

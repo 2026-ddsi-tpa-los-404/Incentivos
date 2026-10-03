@@ -115,26 +115,16 @@ import java.util.NoSuchElementException;
 
     List<Insignia> insigniasDonador = donador.getInsigniasDonador();
 
-    if(insigniasDonador.isEmpty())
-      throw new RuntimeException("no existe insignias para ese ID");
-
     return insigniasDonador.stream().map(i->insigniaMapper.toInsigniaDTO(i)).toList();
-
-    /*return donador.getInsigniasDonador().stream()
-            .map(i -> insigniaMapper.toInsigniaDTO(i))
-            .toList();*/
   }
 
+  /*200 con la misión, 204 si no tiene misión en curso y 404 no existe en la base de datos.*/
   @Override
   public MisionDTO getMisionEnCursoDeDonador(String donadorID) throws NoSuchElementException {
     DonadorIncentivos donador = donadorIncentivosService.obtenerDonador(donadorID);
     Mision misionDonador = donador.getMisionActual();
 
-    if (misionDonador == null){
-      throw new RuntimeException("No existe mision para ese ID");
-    }
-
-    return misionService.misionToDTO(misionDonador);
+    return misionDonador == null ? null : misionService.misionToDTO(misionDonador);
   }
 
   @Override
@@ -168,29 +158,28 @@ import java.util.NoSuchElementException;
       throw new RuntimeException("No existe donador con ese ID");
     }
 
-    List<DonacionDTO> donacionesDelDonador =
-            fachadaDonaciones.buscarPorDonadorYFechaInicio(donadorID, LocalDate.parse("2025-01-01"));
+    DonadorIncentivos donador = donadorIncentivosService.obtenerDonador(donadorID);
+    Mision mision = donador.getMisionActual();
 
-    Mision misionActualDelDonador = donadorIncentivosService.obtenerDonador(donadorID).getMisionActual();
-
-    if (misionActualDelDonador == null) {
+    if (mision == null) {
       donadorProcesadoErrorCounter.increment();
       return;
     }
 
-    boolean completa = misionActualDelDonador.estaCompleta(donacionesDelDonador, fachadaDonaciones);
-    boolean tieneInsignia = this.donadorTieneInsignia(donadorID,misionActualDelDonador.getInsignia().getId().toString());
+    List<DonacionDTO> donacionesDelDonador = fachadaDonaciones.buscarPorDonadorYFechaInicio(donadorID, LocalDate.parse("2025-01-01"));
 
-    if(completa && !tieneInsignia){
-      donadorIncentivosService.agregarInsignia(donadorID, misionActualDelDonador.getInsignia().getId().toString());
-      fachadaDonadoresYEntidades.modifcarCategoria(donadorID, misionActualDelDonador.getCategoriaDonadorFin().toString());
-      misionActualDelDonador.setCompletada(true);
+    boolean completa = mision.estaCompleta(donacionesDelDonador, fachadaDonaciones);
+    boolean tieneInsignia = donador.tieneInsignia(mision.getInsignia());
+    String insigniaID = mision.getInsignia().getId().toString();
+
+    if (completa && !tieneInsignia) {
+      donadorIncentivosService.agregarInsignia(donadorID, insigniaID);
+      fachadaDonadoresYEntidades.modifcarCategoria(donadorID, mision.getCategoriaDonadorFin().toString());
       misionesCompletadasCounter.increment();
     }
     else if (!completa && tieneInsignia) {
-      donadorIncentivosService.quitarInsignia(donadorID, misionActualDelDonador.getInsignia().getId().toString());
-      fachadaDonadoresYEntidades.modifcarCategoria(donadorID, misionActualDelDonador.getCategoriaDonadorInicio().toString());
-      misionActualDelDonador.setCompletada(false);
+      donadorIncentivosService.quitarInsignia(donadorID, insigniaID);
+      fachadaDonadoresYEntidades.modifcarCategoria(donadorID, mision.getCategoriaDonadorInicio().toString());
       misionesRevertidasCounter.increment();
     }
 
@@ -204,12 +193,6 @@ import java.util.NoSuchElementException;
     public void eliminarTodosLosDonadores() {
       donadorIncentivosService.eliminarTodos();
     }
-
-  private boolean donadorTieneInsignia(String donadorID, String insigniaID) {
-    return donadorIncentivosService.obtenerDonador(donadorID)
-            .getInsigniasDonador().stream()
-            .anyMatch(i -> i.getId().toString().equals(insigniaID));
-  }
 
   @Override
   public void setFachadaDonaciones(FachadaDonaciones fachadaDonaciones) {

@@ -39,4 +39,13 @@ public class DonadorIncentivos {
         this.donadorID = donadorId;
     }
 
+    public boolean tieneInsignia(Insignia insignia) {
+        return insigniasDonador.stream()
+                .anyMatch(i -> i.getId().equals(insignia.getId()));
+    }
+
+    public boolean completoMisionActual() {
+        return misionActual != null && tieneInsignia(misionActual.getInsignia());
+    }
+
 }

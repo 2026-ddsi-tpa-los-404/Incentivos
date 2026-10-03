@@ -3,6 +3,8 @@ package ar.edu.utn.dds.k3003.apisexternas;
 import ar.edu.utn.dds.k3003.catedra.dtos.donadoresYEntidades.*;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaIncentivos;
+import ar.edu.utn.dds.k3003.exceptions.ServicioExternoException;
+import feign.FeignException;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,9 +35,12 @@ public class DonadorYEntidadesHTTP implements FachadaDonadoresYEntidades {
             DonadorDTO resultado = donadorClient.buscarPorID(donadorID);
             donadoresOkCounter.increment();
             return resultado;
-        } catch (Exception e) {
+        } catch (FeignException.NotFound e) {
             donadoresErrorCounter.increment();
-            throw e;
+            throw new NoSuchElementException("No existe donador con ID: " + donadorID);
+        } catch (FeignException e) {
+            donadoresErrorCounter.increment();
+            throw new ServicioExternoException("Donadores", e);
         }
     }
 
@@ -47,9 +52,12 @@ public class DonadorYEntidadesHTTP implements FachadaDonadoresYEntidades {
             DonadorDTO resultado = donadorClient.modifcarCategoria(donadorID, body);
             donadoresOkCounter.increment();
             return resultado;
-        } catch (Exception e) {
+        } catch (FeignException.NotFound e) {
             donadoresErrorCounter.increment();
-            throw e;
+            throw new NoSuchElementException("No existe donador con ID: " + donadorID);
+        } catch (FeignException e) {
+            donadoresErrorCounter.increment();
+            throw new ServicioExternoException("Donadores", e);
         }
     }
 

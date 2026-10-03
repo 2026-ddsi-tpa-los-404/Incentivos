@@ -1,6 +1,7 @@
 package ar.edu.utn.dds.k3003.jobs;
 
 import ar.edu.utn.dds.k3003.Fachada;
+import ar.edu.utn.dds.k3003.config.logging.InstanceInfo;
 import ar.edu.utn.dds.k3003.model.DonadorIncentivos;
 import ar.edu.utn.dds.k3003.servicies.DonadorIncentivosService;
 import io.micrometer.core.instrument.binder.logging.LogbackMetrics;
@@ -8,7 +9,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Component
 public class ProcesadorDonadoresJob {
@@ -16,11 +20,14 @@ public class ProcesadorDonadoresJob {
 
     private final Fachada fachada;
     private final DonadorIncentivosService donadorIncentivosService;
+    private final InstanceInfo instanceInfo;
 
     public ProcesadorDonadoresJob(Fachada fachada,
-                                  DonadorIncentivosService donadorIncentivosService) {
+                                  DonadorIncentivosService donadorIncentivosService,
+                                  InstanceInfo instanceInfo) {
         this.fachada = fachada;
         this.donadorIncentivosService = donadorIncentivosService;
+        this.instanceInfo = instanceInfo;
     }
 
     @Scheduled(fixedRate = 15000)  // cada 15 segundos
@@ -28,14 +35,20 @@ public class ProcesadorDonadoresJob {
     public void procesarDonadoresPeriodicamente() {
         log.info("[JOB] Iniciando procesamiento de donadores");
 
-        var donadores = donadorIncentivosService.obtenerTodos();
+        var donadores = donadorIncentivosService.obtenerTodos().stream()
+                .filter(d -> d.getMisionActual() != null)
+                .toList();
 
         for (DonadorIncentivos donador : donadores) {
+            MDC.put("traceId", UUID.randomUUID().toString().substring(0, 8));
+            MDC.put("instanceId", instanceInfo.getInstanceId());
             try {
                 fachada.procesarDonador(donador.getDonadorID());
                 log.info("✅ Donador procesado correctamente - id={}", donador.getDonadorID());
             } catch (Exception e) {
                 log.error("❌ Error procesando donador {} : {}", donador.getDonadorID(), e.getMessage());
+            } finally {
+                MDC.clear();
             }
         }
 

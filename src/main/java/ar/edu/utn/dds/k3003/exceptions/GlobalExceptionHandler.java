@@ -28,6 +28,18 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ExceptionHandler(DonadorSinMisionException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleDonadorSinMision(DonadorSinMisionException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(ServicioExternoException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public String handleServicioExterno(ServicioExternoException e) {
+        return e.getMessage();
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String handleBadRequest(RuntimeException e) {

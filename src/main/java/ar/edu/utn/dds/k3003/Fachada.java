@@ -7,7 +7,9 @@ import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonaciones;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaIncentivos;
 import ar.edu.utn.dds.k3003.exceptions.DonadorNoEncontradoException;
+import ar.edu.utn.dds.k3003.exceptions.DonadorSinMisionException;
 import ar.edu.utn.dds.k3003.exceptions.MisionNoCompletadaException;
+import ar.edu.utn.dds.k3003.exceptions.ServicioExternoException;
 import ar.edu.utn.dds.k3003.model.DonadorIncentivos;
 import ar.edu.utn.dds.k3003.model.Insignia;
 import ar.edu.utn.dds.k3003.model.Mision;
@@ -132,7 +134,7 @@ import java.util.NoSuchElementException;
     if (misionDTO == null) throw new RuntimeException("La misión no puede ser nula");
     try {
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
-    } catch (RuntimeException e) {
+    } catch (NoSuchElementException e) {
       throw new DonadorNoEncontradoException("No existe donador con ID: " + donadorID);
     }
     donadorIncentivosService.asignarMision(donadorID, misionDTO.id());
@@ -143,7 +145,7 @@ import java.util.NoSuchElementException;
     if (insigniaDTO == null) throw new RuntimeException("La insignia no puede ser nula");
     try {
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
-    } catch (RuntimeException e) {
+    } catch (NoSuchElementException e) {
       throw new DonadorNoEncontradoException("No existe donador con ID: " + donadorID);
     }
     donadorIncentivosService.agregarInsignia(donadorID, insigniaDTO.id());
@@ -155,7 +157,10 @@ import java.util.NoSuchElementException;
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
     } catch (NoSuchElementException e) {
       donadorProcesadoErrorCounter.increment();
-      throw new RuntimeException("No existe donador con ese ID");
+      throw new DonadorNoEncontradoException("No existe donador con ID: " + donadorID);
+    } catch (ServicioExternoException e) {
+      donadorProcesadoErrorCounter.increment();
+      throw e;
     }
 
     DonadorIncentivos donador = donadorIncentivosService.obtenerDonador(donadorID);
@@ -163,7 +168,7 @@ import java.util.NoSuchElementException;
 
     if (mision == null) {
       donadorProcesadoErrorCounter.increment();
-      return;
+      throw new DonadorSinMisionException(donadorID);
     }
 
     List<DonacionDTO> donacionesDelDonador = fachadaDonaciones.buscarPorDonadorYFechaInicio(donadorID, LocalDate.parse("2025-01-01"));

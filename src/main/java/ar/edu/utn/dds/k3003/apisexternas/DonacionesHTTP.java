@@ -7,6 +7,8 @@ import ar.edu.utn.dds.k3003.catedra.dtos.donaciones.ProductoDTO;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonaciones;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaDonadoresYEntidades;
 import ar.edu.utn.dds.k3003.catedra.fachadas.FachadaLogistica;
+import ar.edu.utn.dds.k3003.exceptions.ServicioExternoException;
+import feign.FeignException;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,9 +38,12 @@ public class DonacionesHTTP implements FachadaDonaciones {
             List<DonacionDTO> resultado = donacionesClient.buscarPorDonadorYFecha(donadorID, fecha.toString());
             donacionesOkCounter.increment();
             return resultado;
-        } catch (Exception e) {
+        } catch (FeignException.NotFound e) {
+            donacionesOkCounter.increment();
+            return List.of();
+        } catch (FeignException e) {
             donacionesErrorCounter.increment();
-            throw e;
+            throw new ServicioExternoException("Donaciones", e);
         }
     }
 
@@ -48,9 +53,12 @@ public class DonacionesHTTP implements FachadaDonaciones {
             ProductoDTO resultado = donacionesClient.buscarProductoPorID(productoID);
             donacionesOkCounter.increment();
             return resultado;
-        } catch (Exception e) {
+        } catch (FeignException.NotFound e) {
             donacionesErrorCounter.increment();
-            throw e;
+            throw new NoSuchElementException("No existe producto con ID: " + productoID);
+        } catch (FeignException e) {
+            donacionesErrorCounter.increment();
+            throw new ServicioExternoException("Donaciones", e);
         }
     }
 

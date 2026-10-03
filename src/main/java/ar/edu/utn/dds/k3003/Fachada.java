@@ -20,6 +20,8 @@ import ar.edu.utn.dds.k3003.servicies.InsigniaService;
 import ar.edu.utn.dds.k3003.servicies.MisionService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -28,6 +30,8 @@ import java.util.NoSuchElementException;
 
 @Component
   public class Fachada implements FachadaIncentivos{
+
+  private static final Logger log = LoggerFactory.getLogger(Fachada.class);
 
   private InsigniaService insigniaService;
   private MisionService misionService;
@@ -71,15 +75,19 @@ import java.util.NoSuchElementException;
 
   @Override
   public InsigniaDTO agregarInsignia(InsigniaDTO insignia) {
-    return insigniaService.agregarInsignia(insignia);
+    InsigniaDTO creada = insigniaService.agregarInsignia(insignia);
+    log.info("Insignia creada: id={} nombre='{}'", creada.id(), creada.nombre());
+    return creada;
   }
 
   public void eliminarInsignia(String insigniaID) {
       insigniaService.eliminarInsignia(insigniaID);
+      log.info("Insignia {} eliminada", insigniaID);
   }
 
   public void eliminarTodasLasInsignias() {
       insigniaService.eliminarTodasLasInsignias();
+      log.info("Se eliminaron todas las insignias");
   }
   /*--------------------------------------------------------------------------*/
 
@@ -97,15 +105,19 @@ import java.util.NoSuchElementException;
 
   @Override
   public MisionDTO agregarMision(MisionDTO mision) {
-    return misionService.agregarMision(mision);
+    MisionDTO creada = misionService.agregarMision(mision);
+    log.info("Misión creada: id={} nombre='{}' tipo={} insignia={}", creada.id(), creada.nombre(), creada.tipo(), creada.insigniaID());
+    return creada;
   }
 
   public void eliminarMision(String misionID) {
       misionService.eliminarMision(misionID);
+      log.info("Misión {} eliminada", misionID);
   }
 
   public void eliminarTodasLasMisiones(){
       misionService.eliminarTodasLasMisiones();
+      log.info("Se eliminaron todas las misiones");
   }
   /*--------------------------------------------------------------------------*/
 
@@ -138,6 +150,7 @@ import java.util.NoSuchElementException;
       throw new DonadorNoEncontradoException("No existe donador con ID: " + donadorID);
     }
     donadorIncentivosService.asignarMision(donadorID, misionDTO.id());
+    log.info("Misión {} asignada al donador {}", misionDTO.id(), donadorID);
   }
 
   @Override
@@ -149,6 +162,7 @@ import java.util.NoSuchElementException;
       throw new DonadorNoEncontradoException("No existe donador con ID: " + donadorID);
     }
     donadorIncentivosService.agregarInsignia(donadorID, insigniaDTO.id());
+    log.info("Insignia {} asignada manualmente al donador {}", insigniaDTO.id(), donadorID);
   }
 
   @Override
@@ -157,6 +171,7 @@ import java.util.NoSuchElementException;
       fachadaDonadoresYEntidades.buscarDonadorPorID(donadorID);
     } catch (NoSuchElementException e) {
       donadorProcesadoErrorCounter.increment();
+      log.warn("Procesamiento cancelado: el donador {} no existe en Donadores", donadorID);
       throw new DonadorNoEncontradoException("No existe donador con ID: " + donadorID);
     } catch (ServicioExternoException e) {
       donadorProcesadoErrorCounter.increment();
@@ -168,6 +183,7 @@ import java.util.NoSuchElementException;
 
     if (mision == null) {
       donadorProcesadoErrorCounter.increment();
+      log.warn("Procesamiento cancelado: el donador {} no tiene misión asignada", donadorID);
       throw new DonadorSinMisionException(donadorID);
     }
 
@@ -177,15 +193,22 @@ import java.util.NoSuchElementException;
     boolean tieneInsignia = donador.tieneInsignia(mision.getInsignia());
     String insigniaID = mision.getInsignia().getId().toString();
 
+    log.debug("Donador {} - misión '{}': {} donaciones, completa={}, tieneInsignia={}",
+            donadorID, mision.getNombre(), donacionesDelDonador.size(), completa, tieneInsignia);
+
     if (completa && !tieneInsignia) {
       donadorIncentivosService.agregarInsignia(donadorID, insigniaID);
       fachadaDonadoresYEntidades.modifcarCategoria(donadorID, mision.getCategoriaDonadorFin().toString());
       misionesCompletadasCounter.increment();
+      log.info("Misión '{}' completada por el donador {}: se otorga la insignia {} y pasa a categoría {}",
+              mision.getNombre(), donadorID, insigniaID, mision.getCategoriaDonadorFin());
     }
     else if (!completa && tieneInsignia) {
       donadorIncentivosService.quitarInsignia(donadorID, insigniaID);
       fachadaDonadoresYEntidades.modifcarCategoria(donadorID, mision.getCategoriaDonadorInicio().toString());
       misionesRevertidasCounter.increment();
+      log.info("El donador {} dejó de cumplir la misión '{}': se revoca la insignia {} y vuelve a categoría {}",
+              donadorID, mision.getNombre(), insigniaID, mision.getCategoriaDonadorInicio());
     }
 
     donadorProcesadoOkCounter.increment();

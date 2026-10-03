@@ -36,15 +36,15 @@ public class MisionController {
     }
 
     @DeleteMapping("/{misionID}")
-    public ResponseEntity<String> deleteMision(@PathVariable String misionID) {
+    public ResponseEntity<Map<String, String>> deleteMision(@PathVariable String misionID) {
         fachada.eliminarMision(misionID);
-        return ResponseEntity.ok("Se eliminó la misión con ID: " + misionID);
+        return ResponseEntity.ok(Map.of("mensaje", "Se eliminó la misión con ID: " + misionID));
     }
 
     @DeleteMapping("limpiar")
-    public ResponseEntity<String> deleteAllMisiones() {
+    public ResponseEntity<Map<String, String>> deleteAllMisiones() {
         fachada.eliminarTodasLasMisiones();
-        return ResponseEntity.ok("Se eliminaron todas las misiones");
+        return ResponseEntity.ok(Map.of("mensaje", "Se eliminaron todas las misiones"));
     }
 
 }

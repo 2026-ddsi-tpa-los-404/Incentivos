@@ -33,7 +33,7 @@ public class ProcesadorDonadoresJob {
     @Scheduled(fixedRate = 15000)  // cada 15 segundos
     @Transactional
     public void procesarDonadoresPeriodicamente() {
-        log.info("[JOB] Iniciando procesamiento de donadores");
+        log.debug("[JOB] Iniciando procesamiento de donadores");
 
         var donadores = donadorIncentivosService.obtenerTodos().stream()
                 .filter(d -> d.getMisionActual() != null)
@@ -44,7 +44,7 @@ public class ProcesadorDonadoresJob {
             MDC.put("instanceId", instanceInfo.getInstanceId());
             try {
                 fachada.procesarDonador(donador.getDonadorID());
-                log.info("✅ Donador procesado correctamente - id={}", donador.getDonadorID());
+                log.debug("✅ Donador procesado correctamente - id={}", donador.getDonadorID());
             } catch (Exception e) {
                 log.error("❌ Error procesando donador {} : {}", donador.getDonadorID(), e.getMessage());
             } finally {
@@ -52,6 +52,6 @@ public class ProcesadorDonadoresJob {
             }
         }
 
-        log.info("🏁 [JOB] Procesamiento finalizado - {} donadores", donadores.size());
+        log.debug("🏁 [JOB] Procesamiento finalizado - {} donadores", donadores.size());
     }
 }

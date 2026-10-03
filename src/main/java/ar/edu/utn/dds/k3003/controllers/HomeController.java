@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.swing.text.html.parser.Entity;
+import java.util.Map;
 
 @RestController
 public class HomeController {
@@ -25,10 +25,10 @@ public class HomeController {
     }
 
     @DeleteMapping("/reset")
-    public ResponseEntity<String> borrarBaseDeDatos(){
+    public ResponseEntity<Map<String, String>> borrarBaseDeDatos(){
         fachada.eliminarTodosLosDonadores();
         fachada.eliminarTodasLasMisiones();
         fachada.eliminarTodasLasInsignias();
-        return ResponseEntity.ok("Base de datos borrada correctamente");
+        return ResponseEntity.ok(Map.of("mensaje", "Base de datos borrada correctamente"));
     }
 }

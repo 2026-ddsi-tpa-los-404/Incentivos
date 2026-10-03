@@ -37,15 +37,15 @@ public class InsigniaController {
     }
 
     @DeleteMapping("/{insigniaID}")
-    public ResponseEntity<String> deleteInsignia(@PathVariable String insigniaID) {
+    public ResponseEntity<Map<String, String>> deleteInsignia(@PathVariable String insigniaID) {
         fachada.eliminarInsignia(insigniaID);
-        return ResponseEntity.ok("Se eliminó la insignia con ID: " + insigniaID);
+        return ResponseEntity.ok(Map.of("mensaje", "Se eliminó la insignia con ID: " + insigniaID));
     }
 
     @DeleteMapping("limpiar")
-    public ResponseEntity<String> deleteAllInsignias() {
+    public ResponseEntity<Map<String, String>> deleteAllInsignias() {
         fachada.eliminarTodasLasInsignias();
-        return ResponseEntity.ok("Se eliminaron todas las insignias");
+        return ResponseEntity.ok(Map.of("mensaje", "Se eliminaron todas las insignias"));
     }
 }
 

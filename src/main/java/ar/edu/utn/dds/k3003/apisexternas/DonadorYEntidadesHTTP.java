@@ -7,6 +7,8 @@ import ar.edu.utn.dds.k3003.exceptions.ServicioExternoException;
 import feign.FeignException;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -18,6 +20,8 @@ import java.util.NoSuchElementException;
 
 @Component
 public class DonadorYEntidadesHTTP implements FachadaDonadoresYEntidades {
+
+    private static final Logger log = LoggerFactory.getLogger(DonadorYEntidadesHTTP.class);
 
     private DonadorClient donadorClient;
     private Counter donadoresOkCounter;
@@ -37,9 +41,11 @@ public class DonadorYEntidadesHTTP implements FachadaDonadoresYEntidades {
             return resultado;
         } catch (FeignException.NotFound e) {
             donadoresErrorCounter.increment();
+            log.warn("Donadores respondió 404 para el donador {}", donadorID);
             throw new NoSuchElementException("No existe donador con ID: " + donadorID);
         } catch (FeignException e) {
             donadoresErrorCounter.increment();
+            log.error("Error llamando a Donadores (status={}) al buscar el donador {}: {}", e.status(), donadorID, e.getMessage());
             throw new ServicioExternoException("Donadores", e);
         }
     }
@@ -51,12 +57,15 @@ public class DonadorYEntidadesHTTP implements FachadaDonadoresYEntidades {
             body.put("categoria", categoria);
             DonadorDTO resultado = donadorClient.modifcarCategoria(donadorID, body);
             donadoresOkCounter.increment();
+            log.info("Categoría del donador {} actualizada a {} en Donadores", donadorID, categoria);
             return resultado;
         } catch (FeignException.NotFound e) {
             donadoresErrorCounter.increment();
+            log.warn("Donadores respondió 404 al modificar la categoría del donador {}", donadorID);
             throw new NoSuchElementException("No existe donador con ID: " + donadorID);
         } catch (FeignException e) {
             donadoresErrorCounter.increment();
+            log.error("Error llamando a Donadores (status={}) al modificar la categoría del donador {}: {}", e.status(), donadorID, e.getMessage());
             throw new ServicioExternoException("Donadores", e);
         }
     }

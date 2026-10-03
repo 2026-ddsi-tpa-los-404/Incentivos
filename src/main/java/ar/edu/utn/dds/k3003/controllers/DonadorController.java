@@ -27,11 +27,11 @@ public class DonadorController {
     }
 
     @PostMapping("/{donadorID}/insignias")
-    public ResponseEntity<String> postInsigniaADonador(@PathVariable String donadorID,
+    public ResponseEntity<Map<String, String>> postInsigniaADonador(@PathVariable String donadorID,
                                      @RequestBody Map<String, String> body){
         InsigniaDTO insignia = fachada.obtenerInsigniaPorID(body.get("insigniaID"));
         fachada.asignarInsigniaADonador(donadorID,insignia);
-        return ResponseEntity.ok("Insignia asignada correctamente al donador " + donadorID);
+        return ResponseEntity.ok(Map.of("mensaje", "Insignia asignada correctamente al donador " + donadorID));
   }
 
     @GetMapping("/{donadorID}/mision")
@@ -41,11 +41,11 @@ public class DonadorController {
     }
 
     @PostMapping("/{donadorID}/mision")
-    public ResponseEntity<String> postMisionADonador(@PathVariable String donadorID,
+    public ResponseEntity<Map<String, String>> postMisionADonador(@PathVariable String donadorID,
                                    @RequestBody Map<String, String> body){
         MisionDTO mision = fachada.obtenerMisionPorID(body.get("misionID"));
         fachada.asignarMisionADonador(donadorID,mision);
-        return ResponseEntity.ok("Mision asignada correctamente al donador " + donadorID);
+        return ResponseEntity.ok(Map.of("mensaje", "Mision asignada correctamente al donador " + donadorID));
     }
 
   @PostMapping("/{donadorID}/procesamiento")
@@ -55,8 +55,8 @@ public class DonadorController {
     }
 
   @DeleteMapping("/limpiar")
-  public ResponseEntity<String> limpiarTodo() {
+  public ResponseEntity<Map<String, String>> limpiarTodo() {
       fachada.eliminarTodosLosDonadores();
-      return ResponseEntity.ok("Base de datos de donadores limpiada");
+      return ResponseEntity.ok(Map.of("mensaje", "Base de datos de donadores limpiada"));
   }
 }
